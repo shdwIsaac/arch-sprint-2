@@ -9,13 +9,23 @@ exit()
 EOF
 
 docker compose exec -T shard1 mongosh --port 27018 <<EOF
-rs.initiate({_id : "shard1", members: [{ _id : 0, host : "shard1:27018" }]})
-exit()
+rs.initiate({
+  _id: "shard1",
+  members: [
+    { _id: 0, host: "shard1:27018" },
+    { _id: 1, host: "mongodbrpl1:27021" }
+  ]
+})
 EOF
 
 docker compose exec -T shard2 mongosh --port 27019 <<EOF
-rs.initiate({_id : "shard2", members: [{ _id : 1, host : "shard2:27019" }]})
-exit()
+rs.initiate({
+  _id: "shard2",
+  members: [
+    { _id: 0, host: "shard2:27019" },
+    { _id: 1, host: "mongodbrpl2:27022" }
+  ]
+})
 EOF
 
 docker compose exec -T mongos_router mongosh --port 27020 <<EOF
@@ -37,13 +47,5 @@ EOF
 docker compose exec -T shard2 mongosh --port 27019 <<EOF
 use somedb
 db.helloDoc.countDocuments()
-exit()
-EOF
-
-docker compose exec -T mongodbrpl1 mongosh --port 27021 <<EOF
-rs.initiate({_id: "rs0", members: [
-{_id: 0, host: "mongodbrpl1:27021"},
-{_id: 1, host: "mongodbrpl2:27022"},
-]})
-exit()
+exit();
 EOF
